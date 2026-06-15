@@ -1,0 +1,48 @@
+services:
+  laravel:
+    build:
+      context: .
+      dockerfile: docker/laravel/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    env_file:
+      - .env.docker
+    environment:
+      - PYTHON_AI_SERVICE_URL=http://python-ai:8001
+    depends_on:
+      - python-ai
+    networks:
+      - camping
+
+  python-ai:
+    build:
+      context: ./python-ai
+      dockerfile: ../docker/python/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./python-ai:/app
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    networks:
+      - camping
+
+  vite:
+    build:
+      context: .
+      dockerfile: docker/vite/Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - camping
+
+networks:
+  camping:
+    driver: bridge
